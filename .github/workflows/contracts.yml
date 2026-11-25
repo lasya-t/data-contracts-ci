@@ -1,0 +1,43 @@
+name: data contracts
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - run: pytest -q
+
+  contract-compatibility:
+    # on a pull request, compare every changed contract with its version on the target branch
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: check changed contracts
+        env:
+          BASE: origin/${{ github.base_ref }}
+        run: |
+          status=0
+          for f in $(git diff --name-only "$BASE"...HEAD -- 'contracts/*.yaml'); do
+            if git cat-file -e "$BASE:$f" 2>/dev/null; then
+              git show "$BASE:$f" > /tmp/current.yaml
+              PYTHONPATH=src python -m contracts check /tmp/current.yaml "$f" || status=1
+            else
+              echo "$f is a new contract"
+            fi
+          done
+          exit $status
