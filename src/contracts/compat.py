@@ -58,7 +58,7 @@ def _field_changes(o: FieldSpec, n: FieldSpec) -> list[Change]:
             out.append(Change(BREAKING, o.name, "enum restriction removed (any value allowed)"))
         elif new - old:
             out.append(Change(BREAKING, o.name, f"enum values added {sorted(new - old)}"))
-        if o.enum is not None and old - new:
+        if o.enum is not None and n.enum is not None and old - new:
             out.append(Change(SAFE, o.name, f"enum values removed {sorted(old - new)}"))
     for c in (_bound_change(o.name, "min", o.min, n.min, lower_is_looser=True),
               _bound_change(o.name, "max", o.max, n.max, lower_is_looser=False)):

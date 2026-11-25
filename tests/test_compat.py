@@ -49,3 +49,8 @@ def test_any_change_needs_a_version_bump():
 
 def test_no_change_is_fine():
     assert verdict(OLD, Contract.from_dict(copy.deepcopy(BASE)))[0]
+
+
+def test_dropping_enum_restriction_is_one_breaking_change():
+    changes = diff(OLD, changed("1.3.0", lambda f: f["currency"].pop("enum")))
+    assert [(c.severity, c.message) for c in changes] == [(BREAKING, "enum restriction removed (any value allowed)")]
