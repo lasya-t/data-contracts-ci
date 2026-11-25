@@ -1,0 +1,15 @@
+# Contract for the order events the checkout service publishes.
+# Consumers: finance revenue mart, fraud scoring, customer 360.
+name: orders
+version: 1.2.0
+owner: checkout-team
+fields:
+  order_id:     {type: string, required: true, pattern: "^O[0-9]{7}$"}
+  customer_id:  {type: string, required: true}
+  created_at:   {type: datetime, required: true}
+  status:       {type: string, required: true, enum: [placed, paid, shipped, cancelled, returned]}
+  amount:       {type: number, required: true, min: 0}
+  currency:     {type: string, required: true, enum: [USD]}
+  channel:      {type: string, required: true, enum: [web, app, store, call_center]}
+  promo_code:   {type: string, required: false}
+  device_sku:   {type: string, required: false}
